@@ -71,17 +71,31 @@ public:
         if (!root)
             return;
 
-        remove(AData, root.get());
+        remove(AData, root);
     }
 
-    void remove(const t_Data &AData, std::unique_ptr<Node> ANode) {
+    std::unique_ptr<Node> detchRightMost(std::unique_ptr<Node>& ANode) {
+        if (ANode->m_Right)
+            return detchRightMost(ANode->m_Right);
+
+        return std::move(ANode);
+    }
+
+    std::unique_ptr<Node>& getLeftMost(std::unique_ptr<Node>& ANode) {
+        if (ANode->m_Left)
+            return getLeftMost(ANode->m_Left);
+
+        return ANode;
+    }
+
+    void remove(const t_Data &AData, std::unique_ptr<Node>& ANode) {
         if (AData < ANode->m_Data) {
             if (ANode->m_Left)
-                remove(AData, ANode->m_Left.get());
+                remove(AData, ANode->m_Left);
         }
         else if (AData > ANode->m_Data) {
             if (ANode->m_Right)
-                remove(AData, ANode->m_Right.get());
+                remove(AData, ANode->m_Right);
         }
         else {
             if (!ANode->m_Left && !ANode->m_Right) {
@@ -93,14 +107,23 @@ public:
                 std::unique_ptr<Node> tmp = std::move(ANode->m_Right);
                 ANode.reset();
                 ANode = std::move(tmp);
+                return;
             }
 
             if (!ANode->m_Right) {
                 std::unique_ptr<Node> tmp = std::move(ANode->m_Left);
                 ANode.reset();
                 ANode = std::move(tmp);
+                return;
             }
 
+            std::unique_ptr<Node> tmp = detchRightMost(ANode->m_Left);
+            tmp->m_Right = std::move(ANode->m_Right);
+            std::unique_ptr<Node>& tmpLeftMost = getLeftMost(tmp);
+            tmpLeftMost->m_Left = std::move(ANode->m_Left);
+
+            ANode.reset();
+            ANode = std::move(tmp);
         }
     }
 

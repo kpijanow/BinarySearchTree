@@ -15,6 +15,12 @@ int main(int argc, char *argv[])
 
     tree->traversal();
 
+    std::cout << "-----------" << std::endl;
+
+    tree->remove(5);
+
+    tree->traversal();
+
     return 0;
 }
 
